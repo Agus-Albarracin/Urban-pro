@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthenticationContext } from './context/AuthenticationContext';
 
@@ -15,19 +15,14 @@ export function PrivateRoute({ element, roles }: PrivateRouteProps) {
   }
 
   const { authenticatedUser } = authContext;
-  const navigate = useNavigate();
 
-  // Redirigir si no está autenticado
-  if (!authenticatedUser) {
-    navigate('/login');
-    return null;
-  }
-
-  // Redirigir si el rol no tiene permisos
-  if (roles && !roles.includes(authenticatedUser.role)) {
-    navigate('/');
-    return null;
-  }
+    if (!authenticatedUser) {
+      return <Navigate to="/login" />;
+    }
+  
+    if (roles && !roles.includes(authenticatedUser.role)) {
+      return <Navigate to="/" />;
+    }
 
   // Si está autenticado y tiene el rol adecuado, renderizar el componente
   return <>{element}</>;
@@ -47,13 +42,13 @@ export function AuthRoute({ element }: AuthRouteProps) {
 
   const { authenticatedUser } = authContext;
 
-  if (authenticatedUser?.role === 'user' && window.location.pathname === '/') {
+  if (authenticatedUser?.role === 'user') {
     return <Navigate to="/home" />;
   }
 
   // Si ya está autenticado, redirigir a la página principal
-  if (authenticatedUser) {
-    return <Navigate to="/" />;
+  if (authenticatedUser?.role === 'admin' || authenticatedUser?.role === 'editor') {
+    return <Navigate to="/dashboard" />;
   }
 
   // Si no está autenticado, renderizar el componente de login

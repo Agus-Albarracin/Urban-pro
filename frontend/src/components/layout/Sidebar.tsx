@@ -35,9 +35,18 @@ export default function Sidebar({ className }: SidebarProps) {
       backgroundRepeat: 'no-repeat',
       zIndex: 1000,
     }}>
-      <Link to="/" className="no-underline text-black">
-        <img src={logowhite} alt="Urban Logo" className="mx-auto mb-[20%] w-42 h-auto" />
+
+
+      {authenticatedUser?.role !== 'user' 
+      ? (
+      <Link to="/dashboard" className="no-underline text-black">
+      <img src={logowhite} alt="Urban Logo" className="mx-auto mb-[20%] w-42 h-auto" />
       </Link>
+      ) : (
+      <Link to="/home" className="no-underline text-black">
+      <img src={logowhite} alt="Urban Logo" className="mx-auto mb-[20%] w-42 h-auto" />
+      </Link>
+      )}
 
       <nav className="mt-5 flex flex-col gap-3 flex-grow">
 
@@ -46,7 +55,7 @@ export default function Sidebar({ className }: SidebarProps) {
       </SidebarItem>
 
       {authenticatedUser?.role !== 'user' ? (
-      <SidebarItem to="/">
+      <SidebarItem to="/dashboard">
           <Grid /> <FormattedMessage id="dashboard" />
       </SidebarItem>
       ) : null}

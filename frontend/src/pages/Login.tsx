@@ -23,7 +23,11 @@ export default function Login() {
     try {
       const data = await authService.login(loginRequest);
       setAuthenticatedUser(data.user);
-      navigate('/');
+      if (data.user.role === 'user') {
+        navigate('/home');
+      } else if (data.user.role === 'admin' || data.user.role === 'editor') {
+        navigate('/dashboard');
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message);

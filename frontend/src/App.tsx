@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 import useAuth from './hooks/useAuth';
 import Contents from './pages/Contents';
@@ -41,8 +42,19 @@ export default function App() {
   return isLoaded ? (
     <Router>
       <Routes>
+      <Route 
+  path="/" 
+  element={
+    authenticatedUser ? (
+      authenticatedUser.role === 'user' ? <Navigate to="/home" /> : <Navigate to="/dashboard" />
+    ) : (
+      <Navigate to="/login" />
+    )
+  } 
+/>
+        
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <PrivateRoute roles={['admin', 'editor']} element={<Dashboard />} />
           }
