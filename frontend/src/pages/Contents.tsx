@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Loader, Plus, X } from 'react-feather';
+import { Loader, Plus, X, RefreshCw } from 'react-feather';
 import { useForm } from 'react-hook-form';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
+
 import { useParams } from 'react-router';
 
 import ContentsTable from '../components/content/ContentsTable';
@@ -13,15 +14,25 @@ import contentService from '../services/ContentService';
 import courseService from '../services/CourseService';
 
 export default function Course() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id?: string }>();
   const { authenticatedUser } = useAuth();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [profesional, setProfesional] = useState('');
   const [addContentShow, setAddContentShow] = useState<boolean>(false);
   const [error, setError] = useState<string>();
 
-  const userQuery = useQuery('user', async () => courseService.findOne(id));
+  const userQuery = useQuery({
+    queryKey: ['user', id],
+    queryFn: async () => {
+      if (!id) {
+        throw new Error("El ID del curso no está definido."); 
+      }
+      return courseService.findOne(id);
+    },
+    enabled: !!id, 
+  });
 
   const {
     register,
@@ -30,64 +41,112 @@ export default function Course() {
     reset,
   } = useForm<CreateContentRequest>();
 
-  const { data, isLoading } = useQuery(
-    [`contents-${id}`, name, description],
-    async () =>
-      contentService.findAll(id, {
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: id ? [`contents-${id}`, name, description, profesional] : [`contents-empty`], 
+    queryFn: async () => {
+      if (!id) {
+        return [];
+      }
+      return contentService.findAll(id, {
         name: name || undefined,
         description: description || undefined,
-      }),
-    {
-      refetchInterval: 1000,
+        profesional: profesional || undefined,
+      });
     },
-  );
+    enabled: !!id, // Solo ejecuta la consulta si id es válido
+    refetchInterval: false, 
+  });
+  
 
+  interface AxiosErrorResponse {
+    response?: {
+      data?: {
+        message?: string;
+      };
+    };
+  }
+  
   const saveCourse = async (createContentRequest: CreateContentRequest) => {
+    if (!id) {
+      setError("El ID del curso no está definido.");
+      return;
+    }
+  
     try {
       await contentService.save(id, createContentRequest);
       setAddContentShow(false);
       reset();
-      setError(null);
-    } catch (error) {
-      setError(error.response.data.message);
+      setError(undefined);
+    } catch (error: unknown) {
+      if (isAxiosError(error)) {
+        setError(error.response?.data?.message || "Error al guardar el contenido.");
+      } else {
+        setError("Ocurrió un error desconocido.");
+      }
     }
   };
+  
+  //Vaerifica si el error es un error de tipo Axios
+  function isAxiosError(error: unknown): error is AxiosErrorResponse {
+    return (error as AxiosErrorResponse).response !== undefined;
+  }
+  
 
   return (
     <Layout>
-      <h1 className="font-semibold text-3xl mb-5">
-        {!userQuery.isLoading ? `${userQuery.data.name} Contents` : ''}
+    <h1 className="font-semibold text-3xl mb-5">
+        {userQuery.isLoading ? 'Loading...' : `${userQuery.data?.name} Contents`}
       </h1>
       <hr />
-      {authenticatedUser.role !== 'user' ? (
-        <button
-          className="btn my-5 flex gap-2 w-full sm:w-auto justify-center"
-          onClick={() => setAddContentShow(true)}
-        >
-          <Plus /> Add Content
-        </button>
+      {authenticatedUser && authenticatedUser.role !== 'user' ? (
+        <>
+          <div className="flex items-center justify-between w-full">
+            <button
+              className="btn my-5 flex gap-2 sm:w-auto justify-center"
+              onClick={() => setAddContentShow(true)}
+              title="Click to Add new content"
+            >
+              <Plus /> Add Content
+            </button>
+            <button
+              onClick={() => refetch()}
+              title="Click to refresh"
+              className="p-3 border rounded-lg text-white bg-red-700 hover:bg-red-400 flex items-center gap-2"
+            >
+              <RefreshCw />
+            </button>
+          </div>
+        </>
       ) : null}
-
-      <div className="table-filter">
+  
+      <div className="table-filter bg-gray-200">
         <div className="flex flex-row gap-5">
           <input
             type="text"
             className="input w-1/2"
-            placeholder="Name"
+            placeholder="Filter name content"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <input
             type="text"
             className="input w-1/2"
-            placeholder="Description"
+            placeholder="Filter description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+          />
+          <input
+            type="text"
+            className="input w-1/2"
+            placeholder="Filter profesional"
+            value={profesional}
+            onChange={(e) => setProfesional(e.target.value)}
           />
         </div>
       </div>
 
-      <ContentsTable data={data} isLoading={isLoading} courseId={id} />
+      <ContentsTable data={data ?? []} isLoading={isLoading} courseId={id} />
 
       {/* Add User Modal */}
       <Modal show={addContentShow}>
@@ -100,7 +159,7 @@ export default function Course() {
               setAddContentShow(false);
             }}
           >
-            <X size={30} />
+            <X width={24} height={24} />
           </button>
         </div>
         <hr />
@@ -124,6 +183,14 @@ export default function Course() {
             disabled={isSubmitting}
             required
             {...register('description')}
+          />
+          <input
+            type="text"
+            className="input"
+            placeholder="Profesional"
+            disabled={isSubmitting}
+            required
+            {...register('profesional')}
           />
           <button className="btn" disabled={isSubmitting}>
             {isSubmitting ? (

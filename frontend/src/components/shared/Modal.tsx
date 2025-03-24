@@ -11,7 +11,7 @@ export default function Modal({ children, className, show }: ModalProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
 
     if (show) {
       setIsVisible(true);
@@ -24,6 +24,9 @@ export default function Modal({ children, className, show }: ModalProps) {
     return () => clearTimeout(timeout);
   }, [show]);
 
+  const modalRoot = document.getElementById('modal');
+  if (!modalRoot) return null;
+
   return createPortal(
     <div
       className={`absolute inset-0 z-50 bg-gray-900 bg-opacity-20 w-full h-full 
@@ -35,6 +38,6 @@ flex justify-center items-center backdrop-filter backdrop-blur transition-opacit
         {children}
       </div>
     </div>,
-    document.getElementById('modal'),
+    modalRoot,
   );
 }

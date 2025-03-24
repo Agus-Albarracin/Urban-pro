@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Loader } from 'react-feather';
 import { useForm } from 'react-hook-form';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
+import User from '../../models/user/User';
 
 import useAuth from '../../hooks/useAuth';
 import UpdateUserRequest from '../../models/user/UpdateUserRequest';
@@ -9,12 +10,13 @@ import userService from '../../services/UserService';
 
 export default function UpdateProfile() {
   const { authenticatedUser } = useAuth();
+  if (!authenticatedUser) return null;
   const [error, setError] = useState<string>();
 
-  const { data, isLoading, refetch } = useQuery(
-    `user-${authenticatedUser.id}`,
-    () => userService.findOne(authenticatedUser.id),
-  );
+  const { data, isLoading, refetch } = useQuery<User>({
+    queryKey: ['user', authenticatedUser.id],
+    queryFn: () => userService.findOne(authenticatedUser.id),
+  });
 
   const {
     register,
@@ -25,15 +27,19 @@ export default function UpdateProfile() {
 
   const handleUpdateUser = async (updateUserRequest: UpdateUserRequest) => {
     try {
-      if (updateUserRequest.username === data.username) {
+      if (data && updateUserRequest.username === data.username) {
         delete updateUserRequest.username;
       }
       await userService.update(authenticatedUser.id, updateUserRequest);
-      setError(null);
+      setError(undefined);
       setValue('password', '');
       refetch();
     } catch (error) {
-      setError(error.response.data.message);
+      let errorMessage = "Failed to do something exceptional";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      console.log(errorMessage);
     }
   };
 
@@ -44,7 +50,7 @@ export default function UpdateProfile() {
           className="flex mt-3 flex-col gap-3 justify-center md:w-1/2 lg:w-1/3 mx-auto items-center"
           onSubmit={handleSubmit(handleUpdateUser)}
         >
-          <h1 className="font-semibold text-4xl mb-10">{`Welcome ${data.firstName}`}</h1>
+          <h1 className="font-semibold text-4xl mb-10">{`Welcome ${data?.firstName}`}</h1>
           <hr />
           <div className="flex gap-3 w-full">
             <div className="w-1/2">
@@ -52,7 +58,7 @@ export default function UpdateProfile() {
               <input
                 type="text"
                 className="input w-full mt-1"
-                defaultValue={data.firstName}
+                defaultValue={data?.firstName}
                 disabled={isSubmitting}
                 placeholder="First Name"
                 {...register('firstName')}
@@ -63,7 +69,7 @@ export default function UpdateProfile() {
               <input
                 type="text"
                 className="input w-full mt-1"
-                defaultValue={data.lastName}
+                defaultValue={data?.lastName}
                 disabled={isSubmitting}
                 placeholder="Last Name"
                 {...register('lastName')}
@@ -75,7 +81,7 @@ export default function UpdateProfile() {
             <input
               type="text"
               className="input w-full mt-1"
-              defaultValue={data.username}
+              defaultValue={data?.username}
               disabled={isSubmitting}
               placeholder="Username"
               {...register('username')}

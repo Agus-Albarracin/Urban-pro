@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import useAuth from './hooks/useAuth';
 import Contents from './pages/Contents';
@@ -7,6 +7,10 @@ import Courses from './pages/Courses';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Users from './pages/Users';
+import User from './pages/User';
+import HomeUser from './pages/HomeUser';
+import Calendary from './pages/Calendary'
+
 import { AuthRoute, PrivateRoute } from './Route';
 import authService from './services/AuthService';
 
@@ -17,9 +21,10 @@ export default function App() {
   const authenticate = async () => {
     try {
       const authResponse = await authService.refresh();
+      console.log(authResponse);
       setAuthenticatedUser(authResponse.user);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setIsLoaded(true);
     }
@@ -31,18 +36,62 @@ export default function App() {
     } else {
       setIsLoaded(true);
     }
-  }, []);
+  }, [authenticatedUser]);
 
   return isLoaded ? (
     <Router>
-      <Switch>
-        <PrivateRoute exact path="/" component={Dashboard} />
-        <PrivateRoute exact path="/users" component={Users} roles={['admin']} />
-        <PrivateRoute exact path="/courses" component={Courses} />
-        <PrivateRoute exact path="/courses/:id" component={Contents} />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <PrivateRoute roles={['admin', 'editor']} element={<Dashboard />} />
+          }
+        />
+        <Route
+          path="/user"
+          element={
+            <PrivateRoute element={<User />} />
+          }
+        />
+        <Route
+          path="/home"
+          element={
+            <PrivateRoute element={<HomeUser />} />
+          }
+        />
+        
+        <Route
+          path="/calendary"
+          element={
+            <PrivateRoute element={<Calendary />} />
+          }
+        />
 
-        <AuthRoute exact path="/login" component={Login} />
-      </Switch>
+        <Route
+          path="/users"
+          element={
+            <PrivateRoute roles={['admin']} element={<Users />} />
+          }
+        />
+        <Route
+          path="/courses"
+          element={
+            <PrivateRoute element={<Courses />} />
+          }
+        />
+        <Route
+          path="/courses/:id"
+          element={
+            <PrivateRoute element={<Contents />} />
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <AuthRoute element={<Login />} />
+          }
+        />
+      </Routes>
     </Router>
   ) : null;
 }

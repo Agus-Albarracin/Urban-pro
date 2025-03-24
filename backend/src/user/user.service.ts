@@ -1,28 +1,40 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { ILike } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { User } from './user.entity';
+import { Role } from '../enums/role.enum';
 import { UserQuery } from './user.query';
 
 @Injectable()
 export class UserService {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  // Guardar un nuevo usuario
   async save(createUserDto: CreateUserDto): Promise<User> {
     const user = await this.findByUsername(createUserDto.username);
 
     if (user) {
       throw new HttpException(
-        `User with username ${createUserDto.username} is already exists`,
+        `User with username ${createUserDto.username} already exists`,
         HttpStatus.BAD_REQUEST,
       );
     }
 
+    // Hash de la contraseña
     const { password } = createUserDto;
     createUserDto.password = await bcrypt.hash(password, 10);
-    return User.create(createUserDto).save();
+
+    const newUser = this.userRepository.create(createUserDto); // Crear la entidad User
+    return await this.userRepository.save(newUser); // Guardar en la base de datos
   }
 
+  // Obtener todos los usuarios con filtrado
   async findAll(userQuery: UserQuery): Promise<User[]> {
     Object.keys(userQuery).forEach((key) => {
       if (key !== 'role') {
@@ -30,7 +42,13 @@ export class UserService {
       }
     });
 
-    return User.find({
+      // Verificar si 'role', convertirlo a 'Role' si es necesario
+  if (userQuery.role && typeof userQuery.role === 'string') {
+    // Convertir role de string a Role
+    userQuery.role = userQuery.role as Role;
+  }
+    
+    return this.userRepository.find({
       where: userQuery,
       order: {
         firstName: 'ASC',
@@ -39,60 +57,74 @@ export class UserService {
     });
   }
 
+  // Buscar usuario por ID
   async findById(id: string): Promise<User> {
-    const user = await User.findOne(id);
-
-    if (!user) {
+    try {
+      return await this.userRepository.findOneOrFail({where: { id } }); // Devuelve el usuario o lanza una excepción si no lo encuentra
+    } catch (error) {
       throw new HttpException(
-        `Could not find user with matching id ${id}`,
+        `User with id ${id} not found`,
         HttpStatus.NOT_FOUND,
       );
     }
-
-    return user;
   }
 
+  // Buscar usuario por nombre de usuario
   async findByUsername(username: string): Promise<User> {
-    return User.findOne({ where: { username } });
+    try {
+      return await this.userRepository.findOneOrFail({
+        where: { username },
+      });
+    } catch (error) {
+      return null; // Si no se encuentra, se retorna null
+    }
   }
 
+  // Actualizar usuario
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const currentUser = await this.findById(id);
 
-    /* If username is same as before, delete it from the dto */
+    // Si el nombre de usuario es el mismo que el actual, eliminarlo del DTO
     if (currentUser.username === updateUserDto.username) {
       delete updateUserDto.username;
     }
 
+    // Si se proporciona una nueva contraseña, hacer el hash
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
     if (updateUserDto.username) {
-      if (await this.findByUsername(updateUserDto.username)) {
+      const existingUser = await this.findByUsername(updateUserDto.username);
+      if (existingUser) {
         throw new HttpException(
-          `User with username ${updateUserDto.username} is already exists`,
+          `User with username ${updateUserDto.username} already exists`,
           HttpStatus.BAD_REQUEST,
         );
       }
     }
 
-    return User.create({ id, ...updateUserDto }).save();
+    // Actualizar el usuario
+    await this.userRepository.update(id, updateUserDto);
+    return this.findById(id); // Retornar el usuario actualizado
   }
 
+  // Eliminar usuario
   async delete(id: string): Promise<string> {
-    await User.delete(await this.findById(id));
+    const user = await this.findById(id);
+    await this.userRepository.remove(user); // Eliminar usuario
     return id;
   }
 
+  // Contar usuarios
   async count(): Promise<number> {
-    return await User.count();
+    return this.userRepository.count();
   }
 
-  /* Hash the refresh token and save it to the database */
+  // Establecer y guardar el refresh token
   async setRefreshToken(id: string, refreshToken: string): Promise<void> {
     const user = await this.findById(id);
-    await User.update(user, {
+    await this.userRepository.update(user.id, {
       refreshToken: refreshToken ? await bcrypt.hash(refreshToken, 10) : null,
     });
   }

@@ -25,7 +25,7 @@ COPY ormconfig.js .
 
 RUN yarn install --production
 
-COPY --from=build /app/dist ./dist
+COPY --from=build /app/dist/ ./dist/            
 
 EXPOSE 5000
 

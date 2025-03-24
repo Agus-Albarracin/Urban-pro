@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ILike } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { CourseService } from '../course/course.service';
 import { CreateContentDto, UpdateContentDto } from './content.dto';
@@ -8,20 +9,28 @@ import { ContentQuery } from './content.query';
 
 @Injectable()
 export class ContentService {
-  constructor(private readonly courseService: CourseService) {}
+  constructor(
+    private readonly courseService: CourseService,
+    @InjectRepository(Content)
+    private readonly contentRepository: Repository<Content>,  // Inyectamos el repositorio
+  ) {}
 
   async save(
     courseId: string,
     createContentDto: CreateContentDto,
   ): Promise<Content> {
-    const { name, description } = createContentDto;
+    const { name, description, profesional } = createContentDto;
     const course = await this.courseService.findById(courseId);
-    return await Content.create({
+    
+    // Usamos el repositorio para crear la entidad
+    const content = this.contentRepository.create({
       name,
       description,
       course,
-      dateCreated: new Date(),
-    }).save();
+      profesional,
+    });
+
+    return await this.contentRepository.save(content);  // Guardamos la entidad
   }
 
   async findAll(contentQuery: ContentQuery): Promise<Content[]> {
@@ -29,17 +38,18 @@ export class ContentService {
       contentQuery[key] = ILike(`%${contentQuery[key]}%`);
     });
 
-    return await Content.find({
+    return await this.contentRepository.find({
       where: contentQuery,
       order: {
         name: 'ASC',
         description: 'ASC',
+        profesional: 'ASC',
       },
     });
   }
 
   async findById(id: string): Promise<Content> {
-    const content = await Content.findOne(id);
+    const content = await this.contentRepository.findOne({ where: { id } });
 
     if (!content) {
       throw new HttpException(
@@ -52,13 +62,15 @@ export class ContentService {
   }
 
   async findByCourseIdAndId(courseId: string, id: string): Promise<Content> {
-    const content = await Content.findOne({ where: { courseId, id } });
+    const content = await this.contentRepository.findOne({ where: { courseId, id } });
+    
     if (!content) {
       throw new HttpException(
         `Could not find content with matching id ${id}`,
         HttpStatus.NOT_FOUND,
       );
     }
+
     return content;
   }
 
@@ -69,11 +81,13 @@ export class ContentService {
     Object.keys(contentQuery).forEach((key) => {
       contentQuery[key] = ILike(`%${contentQuery[key]}%`);
     });
-    return await Content.find({
+
+    return await this.contentRepository.find({
       where: { courseId, ...contentQuery },
       order: {
         name: 'ASC',
         description: 'ASC',
+        profesional: 'ASC',
       },
     });
   }
@@ -84,16 +98,19 @@ export class ContentService {
     updateContentDto: UpdateContentDto,
   ): Promise<Content> {
     const content = await this.findByCourseIdAndId(courseId, id);
-    return await Content.create({ id: content.id, ...updateContentDto }).save();
+    Object.assign(content, updateContentDto);
+
+    return await this.contentRepository.save(content);  // Actualizamos el contenido
   }
 
   async delete(courseId: string, id: string): Promise<string> {
     const content = await this.findByCourseIdAndId(courseId, id);
-    await Content.delete(content);
+    await this.contentRepository.remove(content);  // Eliminamos el contenido
+
     return id;
   }
 
   async count(): Promise<number> {
-    return await Content.count();
+    return await this.contentRepository.count();  // Contamos los contenidos
   }
 }

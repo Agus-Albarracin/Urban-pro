@@ -24,8 +24,8 @@
 
 @layer components {
   .btn {
-    @apply p-3 bg-blue-500 rounded-md focus:outline-none text-white;
-    @apply hover:bg-blue-700 transition-all;
+    @apply p-3 bg-red-700 rounded-md focus:outline-none text-white;
+    @apply hover:bg-red-400 transition-all;
     @apply focus:ring disabled:opacity-50;
   }
   .btn.danger {

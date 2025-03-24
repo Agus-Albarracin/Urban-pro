@@ -9,7 +9,7 @@ export default function Table({ columns, children }: TableProps) {
   return (
     <table className="min-w-full divide-y divide-gray-200">
       <thead>
-        <tr>
+        <tr className='bg-gray-200'>
           {columns.map((column, index) => (
             <th
               key={index}

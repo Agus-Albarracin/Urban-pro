@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Loader, Plus, X } from 'react-feather';
+import { Loader, Plus, X, RefreshCw } from 'react-feather';
 import { useForm } from 'react-hook-form';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import Layout from '../components/layout';
 import Modal from '../components/shared/Modal';
@@ -10,7 +10,7 @@ import useAuth from '../hooks/useAuth';
 import CreateUserRequest from '../models/user/CreateUserRequest';
 import userService from '../services/UserService';
 
-export default function Users() {
+const Users: React.FC = () => {
   const { authenticatedUser } = useAuth();
 
   const [firstName, setFirstName] = useState('');
@@ -21,22 +21,20 @@ export default function Users() {
   const [addUserShow, setAddUserShow] = useState<boolean>(false);
   const [error, setError] = useState<string>();
 
-  const { data, isLoading } = useQuery(
-    ['users', firstName, lastName, username, role],
-    async () => {
-      return (
-        await userService.findAll({
-          firstName: firstName || undefined,
-          lastName: lastName || undefined,
-          username: username || undefined,
-          role: role || undefined,
-        })
-      ).filter((user) => user.id !== authenticatedUser.id);
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['users', firstName, lastName, username, role],
+    queryFn: async () => {
+      const response = await userService.findAll({
+        firstName: firstName || '',
+        lastName: lastName || '',
+        username: username || '',
+        role: role || '',
+      });
+
+      return response.filter((user) => user.id !== authenticatedUser?.id);
     },
-    {
-      refetchInterval: 1000,
-    },
-  );
+    refetchInterval: false,
+  });
 
   const {
     register,
@@ -49,10 +47,14 @@ export default function Users() {
     try {
       await userService.save(createUserRequest);
       setAddUserShow(false);
-      setError(null);
+      setError(undefined);
       reset();
-    } catch (error) {
-      setError(error.response.data.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
   };
 
@@ -60,26 +62,35 @@ export default function Users() {
     <Layout>
       <h1 className="font-semibold text-3xl mb-5">Manage Users</h1>
       <hr />
-      <button
-        className="btn my-5 flex gap-2 w-full sm:w-auto justify-center"
-        onClick={() => setAddUserShow(true)}
-      >
-        <Plus /> Add User
-      </button>
+      <div className="flex items-center justify-between w-full">
+        <button
+          className="btn my-5 flex gap-2 sm:w-auto justify-center"
+          onClick={() => setAddUserShow(true)}
+        >
+          <Plus /> Add User
+        </button>
+        <button
+          onClick={() => refetch()}
+          title="Click to refresh"
+          className="p-3 border rounded-lg text-white bg-red-700 hover:bg-red-400 flex items-center gap-2"
+        >
+          <RefreshCw />
+        </button>
+      </div>
 
-      <div className="table-filter mt-2">
+      <div className="table-filter mt-2 bg-gray-200">
         <div className="flex flex-row gap-5">
           <input
             type="text"
             className="input w-1/2"
-            placeholder="First Name"
+            placeholder="Filter name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
           />
           <input
             type="text"
             className="input w-1/2"
-            placeholder="Last Name"
+            placeholder="Filter last name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
           />
@@ -88,7 +99,7 @@ export default function Users() {
           <input
             type="text"
             className="input w-1/2"
-            placeholder="Username"
+            placeholder="Filter user"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
@@ -99,7 +110,7 @@ export default function Users() {
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >
-            <option value="">All</option>
+            <option value="">Please select role</option>
             <option value="user">User</option>
             <option value="editor">Editor</option>
             <option value="admin">Admin</option>
@@ -107,7 +118,7 @@ export default function Users() {
         </div>
       </div>
 
-      <UsersTable data={data} isLoading={isLoading} />
+      <UsersTable data={data ?? []} isLoading={isLoading} />
 
       {/* Add User Modal */}
       <Modal show={addUserShow}>
@@ -117,11 +128,11 @@ export default function Users() {
             className="ml-auto focus:outline-none"
             onClick={() => {
               reset();
-              setError(null);
+              setError(undefined);
               setAddUserShow(false);
             }}
           >
-            <X size={30} />
+            <X width={24} height={24} />
           </button>
         </div>
         <hr />
@@ -190,4 +201,6 @@ export default function Users() {
       </Modal>
     </Layout>
   );
-}
+};
+
+export default Users;

@@ -6,12 +6,16 @@ services:
       POSTGRES_DB: carna-database
       POSTGRES_USER: carna
       POSTGRES_PASSWORD: IjSJmKN1fc#DZBL*NHbVoxIh65JvsFFDO@so
+    ports:
+      - "5432:5432"
 
   backend:
     container_name: backend
     build:
       context: backend
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
+    ports:
+      - "5000:5000"
     depends_on:
       - database
     environment:

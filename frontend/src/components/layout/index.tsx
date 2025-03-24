@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { Menu, X } from 'react-feather';
+import { ReactNode } from 'react';
 
 import Sidebar from './Sidebar';
+interface LayoutProps {
+  children: ReactNode;
+}
 
-export default function Layout({ children }) {
+export default function Layout({ children }: LayoutProps) {
   const [showSidebar, setShowSidebar] = useState(false);
 
   return (
@@ -18,7 +22,7 @@ export default function Layout({ children }) {
         }`}
         onClick={() => setShowSidebar(!showSidebar)}
       >
-        {showSidebar ? <X size={30} /> : <Menu size={30} />}
+        {showSidebar ? <X width={24} height={24} /> : <Menu width={24} height={24} />}
       </button>
     </>
   );

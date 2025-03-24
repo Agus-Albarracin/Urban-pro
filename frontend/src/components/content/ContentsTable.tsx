@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Loader, X } from 'react-feather';
+import { AlertTriangle, Loader, X, Trash, Edit } from 'react-feather';
 import { useForm } from 'react-hook-form';
 
 import useAuth from '../../hooks/useAuth';
@@ -12,7 +12,7 @@ import TableItem from '../shared/TableItem';
 
 interface ContentsTableProps {
   data: Content[];
-  courseId: string;
+  courseId: string | undefined;
   isLoading: boolean;
 }
 
@@ -24,8 +24,8 @@ export default function ContentsTable({
   const { authenticatedUser } = useAuth();
   const [deleteShow, setDeleteShow] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const [selectedContentId, setSelectedContentId] = useState<string>();
-  const [error, setError] = useState<string>();
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [updateShow, setUpdateShow] = useState<boolean>(false);
 
   const {
@@ -37,47 +37,51 @@ export default function ContentsTable({
   } = useForm<UpdateContentRequest>();
 
   const handleDelete = async () => {
+    if (!courseId || !selectedContentId) {
+      setError("Course ID or Content ID is missing.");
+      return; 
+    }
+  
     try {
       setIsDeleting(true);
       await contentService.delete(courseId, selectedContentId);
       setDeleteShow(false);
-    } catch (error) {
-      setError(error.response.data.message);
+    } catch (error: any) {
+      setError(error.response?.data?.message || "An error occurred");
     } finally {
       setIsDeleting(false);
     }
   };
 
   const handleUpdate = async (updateContentRequest: UpdateContentRequest) => {
+    if (!courseId || !selectedContentId) {
+      setError("Course ID or Content ID is missing.");
+      return; 
+    }
+  
     try {
-      await contentService.update(
-        courseId,
-        selectedContentId,
-        updateContentRequest,
-      );
+      await contentService.update(courseId, selectedContentId, updateContentRequest);
       setUpdateShow(false);
       reset();
       setError(null);
-    } catch (error) {
-      setError(error.response.data.message);
+    } catch (error: any) {
+      setError(error.response?.data?.message || "An error occurred");
     }
   };
 
   return (
     <>
       <div className="table-container">
-        <Table columns={['Name', 'Description', 'Created']}>
+        <Table columns={['Name', 'Description', 'Profesional']}>
           {isLoading
             ? null
-            : data.map(({ id, name, description, dateCreated }) => (
+            : data.map(({ id, name, description, profesional }) => (
                 <tr key={id}>
                   <TableItem>{name}</TableItem>
                   <TableItem>{description}</TableItem>
-                  <TableItem>
-                    {new Date(dateCreated).toLocaleDateString()}
-                  </TableItem>
+                  <TableItem>{profesional}</TableItem>
                   <TableItem className="text-right">
-                    {['admin', 'editor'].includes(authenticatedUser.role) ? (
+                  {authenticatedUser && ['admin', 'editor'].includes(authenticatedUser.role) ? (
                       <button
                         className="text-indigo-600 hover:text-indigo-900 focus:outline-none"
                         onClick={() => {
@@ -85,14 +89,15 @@ export default function ContentsTable({
 
                           setValue('name', name);
                           setValue('description', description);
+                          setValue('profesional', profesional)
 
                           setUpdateShow(true);
                         }}
                       >
-                        Edit
+                        <Edit />
                       </button>
                     ) : null}
-                    {authenticatedUser.role === 'admin' ? (
+                    {authenticatedUser && authenticatedUser.role === 'admin' ? (
                       <button
                         className="text-red-600 hover:text-red-900 ml-3 focus:outline-none"
                         onClick={() => {
@@ -100,7 +105,7 @@ export default function ContentsTable({
                           setDeleteShow(true);
                         }}
                       >
-                        Delete
+                        <Trash />
                       </button>
                     ) : null}
                   </TableItem>
@@ -116,7 +121,7 @@ export default function ContentsTable({
 
       {/* Delete Content Modal */}
       <Modal show={deleteShow}>
-        <AlertTriangle size={30} className="text-red-500 mr-5 fixed" />
+        <AlertTriangle  width={24} height={24} className="text-red-500 mr-5 fixed" />
         <div className="ml-10">
           <h3 className="mb-2 font-semibold">Delete Content</h3>
           <hr />
@@ -170,7 +175,7 @@ export default function ContentsTable({
                 reset();
               }}
             >
-              <X size={30} />
+              <X width={24} height={24} />
             </button>
           </div>
           <hr />
@@ -181,18 +186,26 @@ export default function ContentsTable({
           >
             <input
               type="text"
-              className="input"
+              className="input border"
               placeholder="Name"
               required
               {...register('name')}
             />
             <input
               type="text"
-              className="input"
+              className="input border"
               placeholder="Description"
               required
               disabled={isSubmitting}
               {...register('description')}
+            />
+            <input
+              type="text"
+              className="input border"
+              placeholder="Profesional"
+              required
+              disabled={isSubmitting}
+              {...register('profesional')}
             />
             <button className="btn" disabled={isSubmitting}>
               {isSubmitting ? (

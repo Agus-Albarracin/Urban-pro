@@ -11,13 +11,16 @@ class AuthService {
         withCredentials: true,
       })
     ).data;
-    apiService.defaults.headers.Authorization = `Bearer ${authResponse.token}`;
+    
+    apiService.defaults.headers.common['Authorization'] = `Bearer ${authResponse.token}`;
+    
     return authResponse;
   }
 
   async logout(): Promise<void> {
     await apiService.post('/api/auth/logout', {}, { withCredentials: true });
-    apiService.defaults.headers.Authorization = null;
+
+    delete apiService.defaults.headers.common['Authorization'];
   }
 
   async refresh(): Promise<AuthResponse> {
@@ -25,10 +28,12 @@ class AuthService {
       await axios.post<AuthResponse>(
         '/api/auth/refresh',
         {},
-        { withCredentials: true },
+        { withCredentials: true }
       )
     ).data;
-    apiService.defaults.headers.Authorization = `Bearer ${authResponse.token}`;
+    
+    apiService.defaults.headers.common['Authorization'] = `Bearer ${authResponse.token}`;
+    
     return authResponse;
   }
 }

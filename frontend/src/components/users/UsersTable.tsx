@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Loader, X } from 'react-feather';
+import { AlertTriangle, Loader, X, Edit, Trash, ChevronLeft, ChevronRight } from 'react-feather';
 import { useForm } from 'react-hook-form';
 
 import UpdateUserRequest from '../../models/user/UpdateUserRequest';
@@ -18,8 +18,8 @@ export default function UsersTable({ data, isLoading }: UsersTableProps) {
   const [deleteShow, setDeleteShow] = useState<boolean>(false);
   const [updateShow, setUpdateShow] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const [selectedUserId, setSelectedUserId] = useState<string>();
-  const [error, setError] = useState<string>();
+  const [selectedUserId, setSelectedUserId] = useState<string | undefined>();
+  const [error, setError] = useState<string | null>(null); 
 
   const {
     register,
@@ -30,35 +30,67 @@ export default function UsersTable({ data, isLoading }: UsersTableProps) {
   } = useForm<UpdateUserRequest>();
 
   const handleDelete = async () => {
+    if (!selectedUserId) {
+      setError('No user selected');
+      return;
+    }
+  
     try {
       setIsDeleting(true);
       await userService.delete(selectedUserId);
       setDeleteShow(false);
-    } catch (error) {
-      setError(error.response.data.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     } finally {
       setIsDeleting(false);
     }
   };
-
+  
   const handleUpdate = async (updateUserRequest: UpdateUserRequest) => {
+    if (!selectedUserId) {
+      setError('No user selected');
+      return;
+    }
+  
     try {
       await userService.update(selectedUserId, updateUserRequest);
       setUpdateShow(false);
       reset();
       setError(null);
-    } catch (error) {
-      setError(error.response.data.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
   };
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 3;
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = currentPage * itemsPerPage;
+  const currentUsers = data.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+    
 
   return (
     <>
       <div className="table-container">
-        <Table columns={['Name', 'Username', 'Status', 'Role', 'Created']}>
+        <Table columns={['Name', 'Username', 'Status', 'Role']}>
           {isLoading
             ? null
-            : data.map(
+            : currentUsers.map(
                 ({ id, firstName, lastName, role, isActive, username }) => (
                   <tr key={id}>
                     <TableItem>{`${firstName} ${lastName}`}</TableItem>
@@ -90,7 +122,7 @@ export default function UsersTable({ data, isLoading }: UsersTableProps) {
                           setUpdateShow(true);
                         }}
                       >
-                        Edit
+                        <Edit />
                       </button>
                       <button
                         className="text-red-600 hover:text-red-900 ml-3 focus:outline-none"
@@ -99,7 +131,7 @@ export default function UsersTable({ data, isLoading }: UsersTableProps) {
                           setDeleteShow(true);
                         }}
                       >
-                        Delete
+                        <Trash />
                       </button>
                     </TableItem>
                   </tr>
@@ -107,15 +139,35 @@ export default function UsersTable({ data, isLoading }: UsersTableProps) {
               )}
         </Table>
 
+
+
         {!isLoading && data.length < 1 ? (
           <div className="text-center my-5 text-gray-500">
             <h1>Empty</h1>
           </div>
         ) : null}
       </div>
+         {/* Paginación */}
+      <div className="flex justify-center gap-2 my-4">
+        <button
+          onClick={() => goToPage(currentPage - 1)}
+          className="p-1 border rounded-lg text-white bg-red-700 hover:bg-red-400 flex items-center gap-2"
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft />
+        </button>
+        <span className="flex items-center">{`Page ${currentPage} of ${totalPages}`}</span>
+        <button
+          onClick={() => goToPage(currentPage + 1)}
+          className="p-1 border rounded-lg text-white bg-red-700 hover:bg-red-400 flex items-center gap-2"
+          disabled={currentPage === totalPages}
+        >
+          <ChevronRight />
+        </button>
+      </div>
       {/* Delete User Modal */}
       <Modal show={deleteShow}>
-        <AlertTriangle size={30} className="text-red-500 mr-5 fixed" />
+        <AlertTriangle width={24} height={24} className="text-red-500 mr-5 fixed" />
         <div className="ml-10">
           <h3 className="mb-2 font-semibold">Delete User</h3>
           <hr />
@@ -167,7 +219,7 @@ export default function UsersTable({ data, isLoading }: UsersTableProps) {
               reset();
             }}
           >
-            <X size={30} />
+            <X width={24} height={24} />
           </button>
         </div>
         <hr />

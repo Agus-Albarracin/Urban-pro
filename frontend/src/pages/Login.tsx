@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Loader } from 'react-feather';
 import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 
 import useAuth from '../hooks/useAuth';
 import LoginRequest from '../models/auth/LoginRequest';
@@ -9,7 +9,7 @@ import authService from '../services/AuthService';
 
 export default function Login() {
   const { setAuthenticatedUser } = useAuth();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [error, setError] = useState<string>();
 
@@ -23,9 +23,13 @@ export default function Login() {
     try {
       const data = await authService.login(loginRequest);
       setAuthenticatedUser(data.user);
-      history.push('/');
-    } catch (error) {
-      setError(error.response.data.message);
+      navigate('/');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
   };
 

@@ -8,6 +8,18 @@ export class CreateCourseDto {
   @IsNotEmpty()
   @IsString()
   description: string;
+
+  @IsNotEmpty()
+  @IsString()
+  type?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  startDate?: Date;
+
+  @IsNotEmpty()
+  @IsOptional()
+  filePath?: any;
 }
 
 export class UpdateCourseDto {
@@ -20,4 +32,13 @@ export class UpdateCourseDto {
   @IsNotEmpty()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  type?: string;
+
+  @IsNotEmpty()
+  @IsOptional()
+  filePath?: any;
 }
