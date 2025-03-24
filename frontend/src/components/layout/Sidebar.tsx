@@ -83,7 +83,7 @@ export default function Sidebar({ className }: SidebarProps) {
 
       </nav>
       <button
-          className="bg-gray-800 mb-5 hover:bg-red-400 text-white rounded-md p-3 transition-colors flex gap-3 justify-center items-center font-semibold focus:outline-none z-100"
+          className="bg-gray-800 mb-5 hover:bg-gray-500 text-white rounded-md p-3 transition-colors flex gap-3 justify-center items-center font-semibold focus:outline-none z-100"
           onClick={() => switchLanguage(locale === 'en' ? 'es' : 'en')}
         >
           <Globe /> <FormattedMessage id="language_button" />
