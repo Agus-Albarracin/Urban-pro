@@ -7,6 +7,8 @@ import Calendar from "react-calendar";
 import { useNavigate } from "react-router-dom";
 import "react-calendar/dist/Calendar.css";
 import './calendar.css'
+import { FormattedMessage } from 'react-intl';
+
 
 const getCourses = async (): Promise<Course[]> => {
   return await CourseService.findAll({});
@@ -32,15 +34,16 @@ export default function CalendarPage() {
     <Layout>
       <div className="max-w-5xl mx-auto p-6">
         <h1 className="text-4xl font-bold text-center text-gray-800">
-          📅 Calendar of courses.
+        <FormattedMessage id="calendarOfCourses" />
         </h1>
         <p className="text-lg text-center text-gray-600 mt-2">
           Lorem ipsum lorem pisum asis ashuy
         </p>
         <hr className="my-6 border-gray-300" />
 
-        {/* Contenedor principal */}
+        {/* Principal */}
         <div className="flex flex-col md:flex-row gap-10 mt-10">
+
           {/* Calendario */}
           <div className="w-full md:w-1/2">
             <Calendar
@@ -60,7 +63,7 @@ export default function CalendarPage() {
             {selectedDate ? (
               <div>
                 <h2 className="text-2xl font-semibold text-gray-800">
-                  Starts on {selectedDate.toDateString()}
+        <FormattedMessage id="startsOn" /> {selectedDate.toDateString()}
                 </h2>
                 <div className="mt-5 space-y-4">
                   {events?.[selectedDate.toDateString()]?.map((course) => (
@@ -76,14 +79,15 @@ export default function CalendarPage() {
                     </div>
                   )) || (
                     <p className="text-gray-600 text-lg">
-                      ❌ No hay cursos programados en esta fecha.
+                      <FormattedMessage id="noHayCursos" />
+
                     </p>
                   )}
                 </div>
               </div>
             ) : (
               <p className="text-gray-600 text-lg">
-                Selecciona una fecha en el calendario para ver los cursos.
+              <FormattedMessage id="seleccionaUnaFechaEn" />
               </p>
             )}
           </div>

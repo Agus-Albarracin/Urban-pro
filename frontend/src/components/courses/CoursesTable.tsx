@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { AlertTriangle, Loader, X, Trash, Edit, ChevronLeft, ChevronRight } from 'react-feather';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
@@ -10,6 +10,10 @@ import courseService from '../../services/CourseService';
 import Modal from '../shared/Modal';
 import Table from '../shared/Table';
 import TableItem from '../shared/TableItem';
+import LanguageContext from "../../locales/i18n";
+import { FormattedMessage } from 'react-intl';
+
+
 
 interface UsersTableProps {
   data: Course[];
@@ -23,6 +27,34 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
   const [selectedCourseId, setSelectedCourseId] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
   const [updateShow, setUpdateShow] = useState<boolean>(false);
+
+  const context = useContext(LanguageContext);
+  const { locale } = context || { locale: "en" };
+  const getColumns = (locale: string) => {
+    const columnsEn = ['Img', 'Name', 'Description', 'Start', 'Mode'];
+    const columnsEs = ['Imagen', 'Nombre', 'Descripción', 'Inicia', 'Modalidad'];
+    return locale === "es" ? columnsEs : columnsEn;
+  };
+  const columns = getColumns(locale);
+
+  const getUpdates = (locale: string) => {
+    const updatesEn = {
+      name: 'Name',
+      description: 'Description',
+      page: 'page',
+      of: 'of'
+    };
+  
+    const updatesEs = {
+      name: 'Nombre',
+      description: 'Descripción',
+      page: 'página',
+      of: 'de'
+    };
+  
+    return locale === "es" ? updatesEs : updatesEn;
+  };
+  const updates = getUpdates(locale);
 
 
   const {
@@ -98,12 +130,12 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
   return (
     <>
       <div className="table-container">
-        <Table columns={['Img', 'Name', 'Description', 'Start', 'Type']}>
+        <Table columns={columns}>
           {isLoading
             ? null
             : currentCourses.map(({ id, name, description, startDate, type, filePath }) => 
             { console.log(`Curso: ${name}, file:`, filePath); 
-              return(
+              return( 
                 <tr key={id}>
                   <TableItem>
                   {filePath && <img src={filePath} alt={name} width="50" />}
@@ -148,7 +180,7 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
         </Table>
         {!isLoading && data.length < 1 ? (
           <div className="text-center my-5 text-gray-500">
-            <h1>Empty</h1>
+            <h1><FormattedMessage id='empty' /></h1>
           </div>
         ) : null}
       </div>
@@ -162,7 +194,7 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
           >
             <ChevronLeft />
           </button>
-          <span className="flex items-center">{`Page ${currentPage} of ${totalPages}`}</span>
+          <span className="flex items-center">{`${updates.page} ${currentPage} ${updates.of} ${totalPages}`}</span>
           <button
             onClick={() => goToPage(currentPage + 1)}
             className="p-1 border rounded-lg text-white bg-red-700 hover:bg-red-400 flex items-center gap-2"
@@ -174,7 +206,7 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
 
         {!isLoading && data.length < 1 ? (
           <div className="text-center my-5 text-gray-500">
-            <h1>Empty</h1>
+            <h1><FormattedMessage id='empty' /></h1>
           </div>
         ) : null}
       
@@ -182,13 +214,12 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
       <Modal show={deleteShow}>
         <AlertTriangle width={24} height={24} className="text-red-500 mr-5 fixed" />
         <div className="ml-10">
-          <h3 className="mb-2 font-semibold">Delete Course</h3>
+          <h3 className="mb-2 font-semibold"><FormattedMessage id='deleteCourses' /></h3>
           <hr />
           <p className="mt-2">
-            Are you sure you want to delete the course? All of course's data
-            will be permanently removed.
+            <FormattedMessage id="removedPermanently" />
             <br />
-            This action cannot be undone.
+            <FormattedMessage id="ThisActionCannotBeUndone" />
           </p>
         </div>
         <div className="flex flex-row gap-3 justify-end mt-5">
@@ -200,7 +231,8 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
             }}
             disabled={isDeleting}
           >
-            Cancel
+            <FormattedMessage id="cancel" />
+            
           </button>
           <button
             className="btn danger"
@@ -210,7 +242,7 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
             {isDeleting ? (
               <Loader className="mx-auto animate-spin" />
             ) : (
-              'Delete'
+            <FormattedMessage id="delete" />
             )}
           </button>
         </div>
@@ -220,10 +252,11 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
           </div>
         ) : null}
       </Modal>
+
       {/* Update Course Modal */}
       <Modal show={updateShow}>
         <div className="flex">
-          <h1 className="font-semibold mb-3">Update Course</h1>
+          <h1 className="font-semibold mb-3"><FormattedMessage id="updateCourses" /></h1>
           <button
             className="ml-auto focus:outline-none"
             onClick={() => {
@@ -245,14 +278,14 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
           <input
             type="text"
             className="input border"
-            placeholder="Name"
+            placeholder={updates.name}
             required
             {...register('name')}
           />
           <input
             type="text"
             className="input border"
-            placeholder="Description"
+            placeholder={updates.description}
             required
             disabled={isSubmitting}
             {...register('description')}
@@ -263,8 +296,8 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
             required
             {...register('type')}
           >
-            <option value="">Selecciona una modalidad</option>
-            <option value="Presencial">Presencial</option>
+            <option value=""><FormattedMessage id="selectMode" /></option>
+            <option value="Presencial"><FormattedMessage id="presential" /></option>
             <option value="Virtual">Virtual</option>
           </select>
 
@@ -279,7 +312,7 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
             {isSubmitting ? (
               <Loader className="animate-spin mx-auto" />
             ) : (
-              'Save'
+              <FormattedMessage id='save' />
             )}
           </button>
           {error ? (

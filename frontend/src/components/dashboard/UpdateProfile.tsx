@@ -7,6 +7,8 @@ import User from '../../models/user/User';
 import useAuth from '../../hooks/useAuth';
 import UpdateUserRequest from '../../models/user/UpdateUserRequest';
 import userService from '../../services/UserService';
+import { FormattedMessage } from 'react-intl';
+
 
 export default function UpdateProfile() {
   const { authenticatedUser } = useAuth();
@@ -50,11 +52,11 @@ export default function UpdateProfile() {
           className="flex mt-3 flex-col gap-3 justify-center md:w-1/2 lg:w-1/3 mx-auto items-center"
           onSubmit={handleSubmit(handleUpdateUser)}
         >
-          <h1 className="font-semibold text-4xl mb-10">{`Welcome ${data?.firstName}`}</h1>
+          <h1 className="font-semibold text-4xl mb-10"><FormattedMessage id="welcome" /> {data?.firstName}</h1>
           <hr />
           <div className="flex gap-3 w-full">
             <div className="w-1/2">
-              <label className="font-semibold">First Name</label>
+              <label className="font-semibold"><FormattedMessage id="firstname" /> </label>
               <input
                 type="text"
                 className="input w-full mt-1"
@@ -65,7 +67,7 @@ export default function UpdateProfile() {
               />
             </div>
             <div className="w-1/2">
-              <label className="font-semibold">Last Name</label>
+              <label className="font-semibold"><FormattedMessage id="lastname" /> </label>
               <input
                 type="text"
                 className="input w-full mt-1"
@@ -77,7 +79,7 @@ export default function UpdateProfile() {
             </div>
           </div>
           <div className="w-full">
-            <label className="font-semibold">Username</label>
+            <label className="font-semibold"><FormattedMessage id="username" /> </label>
             <input
               type="text"
               className="input w-full mt-1"
@@ -88,11 +90,11 @@ export default function UpdateProfile() {
             />
           </div>
           <div className="w-full">
-            <label className="font-semibold">Password</label>
+            <label className="font-semibold"><FormattedMessage id="password" /> </label>
             <input
               type="password"
               className="input w-full mt-1"
-              placeholder="Password (min 6 characters)"
+              placeholder="(min 6 characters)"
               disabled={isSubmitting}
               {...register('password')}
             />
@@ -101,7 +103,7 @@ export default function UpdateProfile() {
             {isSubmitting ? (
               <Loader className="animate-spin mx-auto" />
             ) : (
-              'Update'
+              <FormattedMessage id="update" /> 
             )}
           </button>
           {error ? (

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Loader, Plus, RefreshCw, X} from 'react-feather';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import Calendar from 'react-calendar';
-
+import { FormattedMessage } from 'react-intl';
 
 import CoursesTable from '../components/courses/CoursesTable';
 import Layout from '../components/layout';
@@ -11,6 +11,8 @@ import Modal from '../components/shared/Modal';
 import useAuth from '../hooks/useAuth';
 import CreateCourseRequest from '../models/course/CreateCourseRequest';
 import courseService from '../services/CourseService';
+import LanguageContext from "../locales/i18n";
+
 
 export default function Courses() {
   const [name, setName] = useState('');
@@ -90,10 +92,33 @@ export default function Courses() {
         }
       }
     };
+
+    const context = useContext(LanguageContext);
+    const { locale } = context || { locale: "en" };
+    const getFilters = (locale: string) => {
+      const filtersEn = {
+        name: 'Filter name',
+        description: 'Filter description',
+        type: 'Mode',
+        nameForm: 'Name',
+        descriptionForm: 'Description'
+      };
+    
+      const filtersEs = {
+        name: 'Filtrar nombre',
+        description: 'Filtrar descripción',
+        type: 'Modalidad',
+        nameForm: 'Nombre',
+        descriptionForm: 'Descripción'
+      };
+    
+      return locale === "es" ? filtersEs : filtersEn;
+    };
+    const filters = getFilters(locale);
     
   return (
     <Layout>
-      <h1 className="font-semibold text-3xl mb-5">Manage Courses</h1>
+      <h1 className="font-semibold text-3xl mb-5"><FormattedMessage id="manageCourses" /></h1>
       <hr />
       {authenticatedUser?.role !== 'user' ? (
         <>
@@ -102,7 +127,7 @@ export default function Courses() {
               className="btn my-5 flex gap-2 sm:w-auto justify-center"
               onClick={() => setAddCourseShow(true)}
             >
-              <Plus /> Add Course
+              <Plus /> <FormattedMessage id="addCourses" />
             </button>
             <button
               onClick={() => refetch()}
@@ -122,14 +147,14 @@ export default function Courses() {
           <input
             type="text"
             className="input w-1/2"
-            placeholder="Filter name"
+            placeholder={filters.name}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <input
             type="text"
             className="input w-1/2"
-            placeholder="Filter description"
+            placeholder={filters.description}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
@@ -139,8 +164,8 @@ export default function Courses() {
       value={type}
       onChange={(e) => setType(e.target.value)}
     >
-      <option value="">All</option>
-      <option value="Presencial">Presencial</option>
+      <option value=""><FormattedMessage id="all" /></option>
+      <option value="Presencial"><FormattedMessage id="presential" /></option>
       <option value="Virtual">Virtual</option>
     </select>
 
@@ -149,8 +174,8 @@ export default function Courses() {
       value={sortOrder}
       onChange={(e) => setSortOrder(e.target.value)}
     >
-      <option value="desc">Fechas lejanas</option>
-      <option value="asc">Próximos eventos</option>
+      <option value="desc"><FormattedMessage id="fechasLejanas" /></option>
+      <option value="asc"><FormattedMessage id="proximosEventos" /></option>
     </select>
   </div>
 
@@ -159,7 +184,7 @@ export default function Courses() {
       {/* Add User Modal */}
       <Modal show={addCourseShow}>
         <div className="flex">
-          <h1 className="font-semibold mb-3">Add Course</h1>
+          <h1 className="font-semibold mb-3"><FormattedMessage id="addCourses" /></h1>
           <button
             className="ml-auto focus:outline-none"
             onClick={() => {
@@ -179,7 +204,7 @@ export default function Courses() {
           <input
             type="text"
             className="input"
-            placeholder="Name"
+            placeholder={filters.nameForm}
             disabled={isSubmitting}
             required
             {...register('name')}
@@ -187,7 +212,7 @@ export default function Courses() {
           <input
             type="text"
             className="input"
-            placeholder="Description"
+            placeholder={filters.descriptionForm}
             disabled={isSubmitting}
             required
             {...register('description')}
@@ -198,17 +223,17 @@ export default function Courses() {
             required
             {...register('type')}
           >
-            <option value="">Selecciona modalidad</option>
-            <option value="Presencial">Presencial</option>
+            <option value=""><FormattedMessage id="seleccioneModalidad" /></option>
+            <option value="Presencial"><FormattedMessage id="presential" /></option>
             <option value="Virtual">Virtual</option>
           </select>
 
           <div className="mt-5">
           <label htmlFor="startDate" className="font-semibold text-gray-800">
-            Start Date
+          <FormattedMessage id="startDate" />
           </label>
           <Calendar
-            onChange={(date) => setSelectedDate(date as Date)} // Actualiza el estado con la fecha seleccionada
+            onChange={(date) => setSelectedDate(date as Date)}
             value={selectedDate}
             className="w-full shadow-lg p-4 rounded-lg border border-gray-300"
           />
@@ -219,12 +244,12 @@ export default function Courses() {
             className="input"
             disabled={isSubmitting}
             onChange={(e) => setFile(e.target.files?.[0] || null)}
-          />
+            />
           <button className="btn" disabled={isSubmitting}>
             {isSubmitting ? (
               <Loader className="animate-spin mx-auto" />
             ) : (
-              'Save'
+              <FormattedMessage id="save" />
             )}
           </button>
           {error ? (

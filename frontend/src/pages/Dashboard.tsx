@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import Layout from '../components/layout';
 import statsService from '../services/StatsService';
 import useAuth from '../hooks/useAuth';
+import { FormattedMessage } from 'react-intl';
+
 
 interface StatsData {
   numberOfUsers: number;
@@ -33,20 +35,20 @@ export default function Dashboard() {
               <h1 className="font-semibold sm:text-4xl text-center mb-3">
                 {data?.numberOfUsers ?? 0}
               </h1>
-              <p className="text-center sm:text-lg font-semibold">Users</p>
+              <p className="text-center sm:text-lg font-semibold"><FormattedMessage id="users" /></p>
             </div>
           )}
             <div className="card shadow text-white bg-indigo-500 flex-1">
               <h1 className="font-semibold sm:text-4xl mb-3 text-center">
                 {data?.numberOfCourses ?? 0}
               </h1>
-              <p className="text-center sm:text-lg font-semibold">Courses</p>
+              <p className="text-center sm:text-lg font-semibold"><FormattedMessage id="courses" /></p>
             </div>
             <div className="card shadow text-white bg-green-500 flex-1">
               <h1 className="font-semibold sm:text-4xl mb-3 text-center">
                 {data?.numberOfContents ?? 0}
               </h1>
-              <p className="text-center sm:text-lg font-semibold">Contents</p>
+              <p className="text-center sm:text-lg font-semibold"><FormattedMessage id="contents" /></p>
             </div>
           </div>
         ) : null}

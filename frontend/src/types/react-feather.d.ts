@@ -20,5 +20,7 @@ declare module 'react-feather' {
   export const Award: React.FC<React.SVGProps<SVGAElement>>;
   export const MapPin: React.FC<React.SVGProps<SVGAElement>>;
   export const Calendar: React.FC<React.SVGProps<SVGAElement>>;
+  export const Globe: React.FC<React.SVGProps<SVGAElement>>;
+
 
 }
