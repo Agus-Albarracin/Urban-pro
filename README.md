@@ -1,154 +1,30 @@
-# Admin Panel Project
+# Proyecto: Urbano
 
-# Assumptions
-
-- User can have only 1 role.
-- 3 Roles: Admin, Editor, User (Authorizations of roles are described down below)
-- There are 3 data types. Users, Courses and Contents.
-- Courses can have multiple contents.
-
-**Admin**
-
-| Table    | Read | Write | Update | Delete |
-| -------- | ---- | ----- | ------ | ------ |
-| Users    | ✓    | ✓     | ✓      | ✓      |
-| Courses  | ✓    | ✓     | ✓      | ✓      |
-| Contents | ✓    | ✓     | ✓      | ✓      |
-
-**Editor**
-
-| Table    | Read   | Write | Update | Delete |
-| -------- | ------ | ----- | ------ | ------ |
-| Users    | itself |       | itself |        |
-| Courses  | ✓      | ✓     | ✓      |        |
-| Contents | ✓      | ✓     | ✓      |        |
-
-**User**
-
-| Table    | Read   | Write | Update | Delete |
-| -------- | ------ | ----- | ------ | ------ |
-| Users    | itself |       | itself |        |
-| Courses  | ✓      |       |        |        |
-| Contents | ✓      |       |        |        |
-
-# Tech Stack
-
-1. **Backend**: NestJS
-2. **Frontend**: React
-3. **Database**: PostgreSQL
-4. **Testing**: Jest for unit testing. Postman for e2e testing.
-
-# Features
-
-- Swagger Documentation
-- JWT authentication with refresh & access token
-- Role based authorization
-- Data filtering
-- Fully responsive design
-
-# Authentication
-
-Application generates 2 tokens on login. Access token and refresh token. Access token has a lifetime of 15 minutes and the refresh token has a lifetime of 1 year.
-
-# First Login
-
-On the first run, application inserts a new admin to the database.
-
-- **username**: admin
-- **password**: admin123
-
-# How to setup
-
-## **Deploy with Docker**
-
-You can run the entire app using docker compose.
-
-On root directory
-
-```bash
-docker-compose up -d
-```
-
-Application will be deployed on http://localhost:3000
-
-Swagger Docs on http://localhost:3000/api/docs
-
-## **Running locally**
-
-## Backend
-
-First you have to postgresql installed on your computer.
-
-Edit the database properties on the backend/.env file.
-
-On backend directory
-
-### Installing the dependencies
-
-```bash
-yarn
-```
-
-### Running the app
-
-```bash
-$ yarn start
-```
-
-Backend will be started on http://localhost:5000
-
-Swagger Docs on http://localhost:5000/api/docs
+**Nota**: utilice `yarn` para instalar las dependencias del proyecto.
 
 ## Frontend
 
-On frontend directory
+- **Migración de CRACO a Vite**  
+  El proyecto fue migrado de CRACO (Create React App Configuration Override, obsoleto) a Vite, parar mejorar el rendimiento de la compilación. El puerto por defecto para el front ahora es 5173.
 
-### Installing the dependencies
+- **Actualización de dependencias**  
+  Se actualizaron todas las dependencias del proyecto a las versiones más recientes para asegurar la compatibilidad y mejorar la seguridad y el rendimiento.
 
-```bash
-yarn
-```
+## Backend
 
-### Running the app
+- **Creación de carpeta `common` y archivo `base.entity.ts`**  
+  Se ha creado una carpeta `common` y un archivo `base.entity.ts` para centralizar la gestión de entidades comunes. Ahora todas las entidades pueden heredar propiedades como fecha de creación, fecha de actualización y uuid de este archivo base.
 
-```bash
-$ yarn start
-```
+- **Actualización en la interacción con la base de datos**  
+  Se ha cambiado la forma en que se interactúa con la base de datos. Antes, se accedía directamente a las entidades utilizando métodos estáticos. Ahora, se utiliza el patrón de repositorio de TypeORM, lo que facilita la gestión de las operaciones de la base de datos, haciendo el código más limpio y modular. Además, permite la inyección de repositorios en los servicios mediante `@InjectRepository()`.
 
-Frontend will be started on http://localhost:3000
+## Operaciones (Ops)
 
-# Testing
+- **Modificación del archivo `docker-compose.yml`**  
+  Se añadieron los puertos necesarios en el archivo `docker-compose.yml` para el despliegue de los servicios en contenedores.
 
-**Unit testing**
+- **Configuración de puertos en el frontend**  
+  El frontend ahora se ejecuta por defecto en el puerto `5173`, que es el puerto predeterminado utilizado por Vite para el desarrollo.
 
-On backend directory
-
-```bash
-yarn test
-```
-
-**e2e api testing**
-
-First start the backend locally.
-
-On backend directory
-
-Install the dependencies
-
-```bash
-yarn
-```
-
-Start the backend locally.
-
-```bash
-yarn start
-```
-
-Start the test
-
-Test will login as **username:** admin, **password:** admin123 and create users with usernames test and test2. If you change username and password of admin or if you add users with username test and test2. Tests will fail.
-
-```bash
-yarn test:e2e
-```
+- **Modificación del archivo `nginx.conf`**  
+  Se actualizó la ruta de configuración Nginx con los nuevos parametros que ofrece Vite.
