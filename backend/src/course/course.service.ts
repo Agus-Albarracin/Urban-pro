@@ -74,13 +74,13 @@ export class CourseService {
       console.log(id, updateCourseDto)
       const course = await this.findById(id);
     
-      // Si updateCourseDto.filePath no existe, conservar el anterior
+      // Si no actualiza una nueva imagen, conservar la anterior
       const updatedCourse = {
         ...course,
         ...updateCourseDto,
         filePath: updateCourseDto.filePath 
           ? `http://localhost:5000/uploads/${path.basename(updateCourseDto.filePath)}`
-          : course.filePath, // Mantiene la imagen actual si no se actualiza
+          : course.filePath,
       };
     
       return await this.courseRepository.save(updatedCourse);
@@ -88,7 +88,7 @@ export class CourseService {
 
   async delete(id: string): Promise<string> {
     const course = await this.findById(id);
-    await this.courseRepository.remove(course); // Usar 'remove' para eliminar el curso
+    await this.courseRepository.remove(course);
     return id;
   }
 

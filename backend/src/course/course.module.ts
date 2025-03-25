@@ -8,7 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
-    forwardRef(() => ContentModule),  // Usar forwardRef si hay dependencia circular
+    forwardRef(() => ContentModule),
     TypeOrmModule.forFeature([Course]), 
   ],
   controllers: [CourseController],

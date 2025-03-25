@@ -7,7 +7,7 @@ import { Content } from './content.entity'
 
 @Module({
   imports: [
-    forwardRef(() => CourseModule),  // Usar forwardRef si hay dependencia circular
+    forwardRef(() => CourseModule),
     TypeOrmModule.forFeature([Content]),  
   ],
   controllers: [],

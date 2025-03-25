@@ -5,7 +5,7 @@ import { MulterModule } from '@nestjs/platform-express';
 @Module({
   imports: [
     MulterModule.register({
-      dest: './uploads', // Ruta donde se almacenarán los archivos
+      dest: './uploads',
     }),
   ],
   controllers: [UploadController],

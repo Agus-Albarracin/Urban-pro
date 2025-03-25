@@ -43,16 +43,29 @@ export class CourseController {
 
   @Post()
   @Roles(Role.Admin, Role.Editor)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+          cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
   async save(
     @Body() createCourseDto: CreateCourseDto,  
     @UploadedFile() file: Express.Multer.File
   ): Promise<Course>{
-    console.log('Received file:', file);  // Verifica que el archivo esté llegando
+    console.log('Received file:', file);
     console.log('Received DTO:', createCourseDto);
     if (!file) {
       throw new Error("No file uploaded.");
     }
+
+    createCourseDto.filePath = file.filename;
+    
     return await this.courseService.save(createCourseDto, file);
   }
 
@@ -70,7 +83,7 @@ export class CourseController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './uploads', // Guardar en la carpeta uploads
+        destination: './uploads',
         filename: (req, file, cb) => {
           const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
           cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
@@ -81,9 +94,8 @@ export class CourseController {
   async update(
     @Param('id') id: string,
     @Body() updateCourseDto: UpdateCourseDto,
-    @UploadedFile() file?: Express.Multer.File, // Archivo opcional
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<Course> {
-    // Si se sube una nueva imagen, actualizamos el filePath
     if (file) {
       updateCourseDto.filePath = file.filename;
     }

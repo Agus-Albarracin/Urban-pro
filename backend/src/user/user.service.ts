@@ -30,8 +30,8 @@ export class UserService {
     const { password } = createUserDto;
     createUserDto.password = await bcrypt.hash(password, 10);
 
-    const newUser = this.userRepository.create(createUserDto); // Crear la entidad User
-    return await this.userRepository.save(newUser); // Guardar en la base de datos
+    const newUser = this.userRepository.create(createUserDto);
+    return await this.userRepository.save(newUser);
   }
 
   // Obtener todos los usuarios con filtrado
@@ -60,7 +60,7 @@ export class UserService {
   // Buscar usuario por ID
   async findById(id: string): Promise<User> {
     try {
-      return await this.userRepository.findOneOrFail({where: { id } }); // Devuelve el usuario o lanza una excepción si no lo encuentra
+      return await this.userRepository.findOneOrFail({where: { id } });
     } catch (error) {
       throw new HttpException(
         `User with id ${id} not found`,
@@ -76,7 +76,7 @@ export class UserService {
         where: { username },
       });
     } catch (error) {
-      return null; // Si no se encuentra, se retorna null
+      return null;
     }
   }
 
@@ -106,13 +106,13 @@ export class UserService {
 
     // Actualizar el usuario
     await this.userRepository.update(id, updateUserDto);
-    return this.findById(id); // Retornar el usuario actualizado
+    return this.findById(id);
   }
 
   // Eliminar usuario
   async delete(id: string): Promise<string> {
     const user = await this.findById(id);
-    await this.userRepository.remove(user); // Eliminar usuario
+    await this.userRepository.remove(user);
     return id;
   }
 
