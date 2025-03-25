@@ -86,11 +86,25 @@ export class CourseService {
       return await this.courseRepository.save(updatedCourse);
     }
 
-  async delete(id: string): Promise<string> {
-    const course = await this.findById(id);
-    await this.courseRepository.remove(course);
-    return id;
-  }
+    async delete(id: string): Promise<string> {
+      const course = await this.findById(id);
+      if (!course) {
+        throw new Error("Course not found.");
+      }
+    
+      if (course.filePath) {
+        const filePath = path.join(__dirname, '../../uploads', course.filePath);
+        try {
+          await fs.promises.unlink(filePath);
+          console.log(`File deleted: ${filePath}`);
+        } catch (error) {
+          console.error(`Error deleting file: ${error.message}`);
+        }
+      }
+    
+      await this.courseRepository.remove(course);
+      return id;
+    }
 
   async count(): Promise<number> {
     return await this.courseRepository.count();
