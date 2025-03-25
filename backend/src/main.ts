@@ -37,24 +37,12 @@ async function bootstrap() {
   //cors
     // Configura CORS
     app.enableCors({
-      origin: 'http://localhost:5173',  // Cambia esto a la URL de tu frontend
+      origin: 'http://localhost:5173',
       credentials: true,               // Permite el uso de cookies
     });
 
-      // Servir archivos estáticos en /uploads
+  // Servir archivos estáticos en /uploads
   app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-
-  // Elimina o comenta estas líneas para deshabilitar Swagger
-  /*
-  const config = new DocumentBuilder()
-    .setTitle('Carna Project API')
-    .setDescription('Carna Project API Documentation')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/api/docs', app, document);
-  */
 
   await createAdminOnFirstUse();
 

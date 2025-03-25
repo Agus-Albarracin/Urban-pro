@@ -30,8 +30,10 @@ import { UploadController } from './upload/upload.controller';
       username: process.env.DATABASE_USERNAME, // Obtener el usuario de la base de datos desde .env
       password: process.env.DATABASE_PASSWORD, // Obtener la contraseña de la base de datos desde .env
       database: process.env.DATABASE_NAME, // Obtener el nombre de la base de datos desde .env
-      entities: [Content, Course, User], // Asegúrate de agregar todas tus entidades aquí
-      synchronize: true, // Sincronizar la base de datos (solo en desarrollo)
+      entities: [Content, Course, User],
+      synchronize: process.env.NODE_ENV !== 'production',
+      migrations: ['dist/migrations/*.js'],
+      migrationsRun: process.env.NODE_ENV === 'production', 
     }),
     UserModule,
     AuthModule,
