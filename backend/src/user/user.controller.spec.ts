@@ -86,6 +86,7 @@ describe('UserController', () => {
       const returnValue = await controller.save({
         firstName: 'test',
         lastName: 'test',
+        email: 'test',
         password: 'test',
         role: Role.User,
         username: 'test',
@@ -119,6 +120,7 @@ describe('UserController', () => {
     it('should update a user and return changed values', async () => {
       const updatedUser = await controller.update('testid', {
         firstName: 'test',
+        email: 'test',
         role: Role.Editor,
       });
       expect(updatedUser.id).toBe('testid');

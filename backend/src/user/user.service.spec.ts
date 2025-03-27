@@ -98,6 +98,7 @@ describe('UserService', () => {
       const returnValue = await service.save({
         firstName: 'test',
         lastName: 'test',
+        email: 'test',
         password: 'test',
         role: Role.User,
         username: 'test',
@@ -140,6 +141,7 @@ describe('UserService', () => {
     it('should update a user and return changed values', async () => {
       const updatedUser = await service.update('testid', {
         firstName: 'test',
+        email: 'test',
         role: Role.Editor,
       });
       expect(updatedUser.id).toBe('testid');
