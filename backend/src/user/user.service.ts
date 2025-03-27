@@ -15,7 +15,6 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  // Guardar un nuevo usuario
   async save(createUserDto: CreateUserDto): Promise<User> {
     const user = await this.findByUsername(createUserDto.username);
 
@@ -26,7 +25,6 @@ export class UserService {
       );
     }
 
-    // Hash de la contraseña
     const { password } = createUserDto;
     createUserDto.password = await bcrypt.hash(password, 10);
 
@@ -34,7 +32,6 @@ export class UserService {
     return await this.userRepository.save(newUser);
   }
 
-  // Obtener todos los usuarios con filtrado
   async findAll(userQuery: UserQuery): Promise<User[]> {
     Object.keys(userQuery).forEach((key) => {
       if (key !== 'role') {
@@ -42,9 +39,7 @@ export class UserService {
       }
     });
 
-      // Verificar si 'role', convertirlo a 'Role' si es necesario
   if (userQuery.role && typeof userQuery.role === 'string') {
-    // Convertir role de string a Role
     userQuery.role = userQuery.role as Role;
   }
     
@@ -57,7 +52,6 @@ export class UserService {
     });
   }
 
-  // Buscar usuario por ID
   async findById(id: string): Promise<User> {
     try {
       return await this.userRepository.findOneOrFail({where: { id } });
@@ -69,7 +63,6 @@ export class UserService {
     }
   }
 
-  // Buscar usuario por nombre de usuario
   async findByUsername(username: string): Promise<User> {
     try {
       return await this.userRepository.findOneOrFail({
@@ -80,16 +73,13 @@ export class UserService {
     }
   }
 
-  // Actualizar usuario
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const currentUser = await this.findById(id);
 
-    // Si el nombre de usuario es el mismo que el actual, eliminarlo del DTO
     if (currentUser.username === updateUserDto.username) {
       delete updateUserDto.username;
     }
 
-    // Si se proporciona una nueva contraseña, hacer el hash
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
@@ -104,24 +94,20 @@ export class UserService {
       }
     }
 
-    // Actualizar el usuario
     await this.userRepository.update(id, updateUserDto);
     return this.findById(id);
   }
 
-  // Eliminar usuario
   async delete(id: string): Promise<string> {
     const user = await this.findById(id);
     await this.userRepository.remove(user);
     return id;
   }
 
-  // Contar usuarios
   async count(): Promise<number> {
     return this.userRepository.count();
   }
 
-  // Establecer y guardar el refresh token
   async setRefreshToken(id: string, refreshToken: string): Promise<void> {
     const user = await this.findById(id);
     await this.userRepository.update(user.id, {

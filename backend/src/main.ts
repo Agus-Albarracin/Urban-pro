@@ -19,6 +19,7 @@ async function createAdminOnFirstUse() {
       lastName: 'admin',
       isActive: true,
       username: 'admin',
+      email: 'admin@example.com',
       role: Role.Admin,
       password: await bcrypt.hash('admin123', 10),
     }).save();
@@ -35,13 +36,13 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   //cors
-    // Configura CORS
+    
     app.enableCors({
       origin: 'http://localhost:5173',
-      credentials: true,               // Permite el uso de cookies
+      credentials: true
     });
 
-  // Servir archivos estáticos en /uploads
+  
   app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
   await createAdminOnFirstUse();

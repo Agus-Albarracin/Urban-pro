@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CreateContentDto, UpdateContentDto } from 'src/content/content.dto';
+import { CreateContentDto, UpdateContentDto } from '../content/content.dto';
 
 import { ContentService } from '../content/content.service';
 import { CourseController } from './course.controller';
 import { CreateCourseDto, UpdateCourseDto } from './course.dto';
 import { CourseService } from './course.service';
+
+import { Express } from 'express';
 
 const CourseMockService = {
   save: jest.fn().mockImplementation((createCourseDto: CreateCourseDto) => {
@@ -129,10 +131,26 @@ describe('CourseController', () => {
 
   describe('saveCourse', () => {
     it('should get the created course ', async () => {
-      const created = await controller.save({
+      const createCourseDto = {
         name: 'test',
         description: 'test',
-      });
+      };
+      
+      const file: Express.Multer.File = {
+        fieldname: 'file',
+        originalname: 'test.jpg', 
+        encoding: '7bit',
+        mimetype: 'image/jpeg', 
+        size: 12345, 
+        buffer: Buffer.from(''), 
+        stream: null,
+        destination: '',
+        filename: '',
+        path: '',
+      };
+  
+      const created = await controller.save(createCourseDto, file);
+      
       expect(created.id).toBe('testid');
       expect(created.name).toBe('test');
       expect(created.description).toBe('test');
@@ -200,6 +218,7 @@ describe('CourseController', () => {
       const content = await controller.saveContent('testcourseid', {
         name: 'test',
         description: 'test',
+        profesional: 'testProfesional',
       });
       const date = spy.mock.instances[0];
 
@@ -207,6 +226,7 @@ describe('CourseController', () => {
         id: 'testid',
         name: 'test',
         description: 'test',
+        profesional: 'testProfesional',
         dateCreated: date,
       });
     });
@@ -233,6 +253,7 @@ describe('CourseController', () => {
         {
           name: 'test',
           description: 'test',
+          profesional: 'testProfesional',
         },
       );
 
@@ -240,6 +261,7 @@ describe('CourseController', () => {
         id: 'testcontentid',
         name: 'test',
         description: 'test',
+        profesional: 'testProfesional',
       });
 
       const updatedContent2 = await controller.updateContent(
@@ -247,12 +269,14 @@ describe('CourseController', () => {
         'testcontentid2',
         {
           description: 'test',
+          profesional: 'testProfesional',
         },
       );
 
       expect(updatedContent2).toEqual({
         id: 'testcontentid2',
         description: 'test',
+        profesional: 'testProfesional',
       });
     });
   });

@@ -21,6 +21,10 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsAlphanumeric()
+  email: string;
+
+  @IsNotEmpty()
+  @IsAlphanumeric()
   username: string;
 
   @IsNotEmpty()
@@ -42,6 +46,10 @@ export class UpdateUserDto {
   @IsNotEmpty()
   @IsString()
   lastName?: string;
+
+  @IsNotEmpty()
+  @IsAlphanumeric()
+  email: string;
 
   @IsOptional()
   @IsNotEmpty()

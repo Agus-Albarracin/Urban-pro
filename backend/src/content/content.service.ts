@@ -12,7 +12,7 @@ export class ContentService {
   constructor(
     private readonly courseService: CourseService,
     @InjectRepository(Content)
-    private readonly contentRepository: Repository<Content>,  // Inyectamos el repositorio
+    private readonly contentRepository: Repository<Content>,
   ) {}
 
   async save(
@@ -22,7 +22,6 @@ export class ContentService {
     const { name, description, profesional } = createContentDto;
     const course = await this.courseService.findById(courseId);
     
-    // Usamos el repositorio para crear la entidad
     const content = this.contentRepository.create({
       name,
       description,
@@ -30,7 +29,7 @@ export class ContentService {
       profesional,
     });
 
-    return await this.contentRepository.save(content);  // Guardamos la entidad
+    return await this.contentRepository.save(content);
   }
 
   async findAll(contentQuery: ContentQuery): Promise<Content[]> {
@@ -100,17 +99,17 @@ export class ContentService {
     const content = await this.findByCourseIdAndId(courseId, id);
     Object.assign(content, updateContentDto);
 
-    return await this.contentRepository.save(content);  // Actualizamos el contenido
+    return await this.contentRepository.save(content); 
   }
 
   async delete(courseId: string, id: string): Promise<string> {
     const content = await this.findByCourseIdAndId(courseId, id);
-    await this.contentRepository.remove(content);  // Eliminamos el contenido
+    await this.contentRepository.remove(content); 
 
     return id;
   }
 
   async count(): Promise<number> {
-    return await this.contentRepository.count();  // Contamos los contenidos
+    return await this.contentRepository.count();
   }
 }

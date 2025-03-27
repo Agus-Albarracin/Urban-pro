@@ -117,6 +117,7 @@ describe('ContentService', () => {
       const content = await service.save('testcourseid', {
         name: 'test',
         description: 'test',
+        profesional: 'testProfesional',
       });
       const date = spy.mock.instances[0];
 
@@ -124,6 +125,7 @@ describe('ContentService', () => {
         id: 'testid',
         name: 'test',
         description: 'test',
+        profesional: 'testProfesional',
         dateCreated: date,
       });
     });
@@ -186,21 +188,25 @@ describe('ContentService', () => {
       const updatedContent = await service.update('testid', 'testcontentid', {
         name: 'test',
         description: 'test',
+        profesional: 'testProfesional',
       });
 
       expect(updatedContent).toEqual({
         id: 'testcontentid',
         name: 'test',
         description: 'test',
+        profesional: 'testProfesional',
       });
 
       const updatedContent2 = await service.update('testid', 'testcontentid2', {
         description: 'test',
+        profesional: 'testProfesional',
       });
 
       expect(updatedContent2).toEqual({
         id: 'testcontentid2',
         description: 'test',
+        profesional: 'testProfesional',
       });
     });
   });

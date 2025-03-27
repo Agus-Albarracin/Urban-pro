@@ -78,7 +78,21 @@ describe('CourseService', () => {
       const created = await service.save({
         name: 'test',
         description: 'test',
+        
+      },
+      {
+        fieldname: 'file',
+        originalname: 'test.jpg', 
+        encoding: '7bit',
+        mimetype: 'image/jpeg', 
+        size: 12345, 
+        buffer: Buffer.from(''), 
+        stream: null,
+        destination: '',
+        filename: '',
+        path: '',
       });
+
       expect(created.id).toBe('testid');
       expect(created.name).toBe('test');
       expect(created.description).toBe('test');

@@ -70,7 +70,7 @@ export class CourseController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './uploads', // Guardar en la carpeta uploads
+        destination: './uploads',
         filename: (req, file, cb) => {
           const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
           cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
@@ -81,7 +81,7 @@ export class CourseController {
   async update(
     @Param('id') id: string,
     @Body() updateCourseDto: UpdateCourseDto,
-    @UploadedFile() file?: Express.Multer.File, // Archivo opcional
+    @UploadedFile() file?: Express.Multer.File,
   ): Promise<Course> {
     // Si se sube una nueva imagen, actualizamos el filePath
     if (file) {
