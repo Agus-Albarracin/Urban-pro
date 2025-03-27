@@ -39,6 +39,11 @@ class UserService {
   async delete(id: string): Promise<void> {
     await apiService.delete(`/api/courses/${id}`);
   }
+
+  async enroll(courseId: string, { userId }: { userId: string }): Promise<{ success: boolean; message?: string }> {
+    const response = await apiService.post(`/api/courses/${courseId}/enroll`, { userId });
+    return response.data;
+  }
 }
 
 export default new UserService();

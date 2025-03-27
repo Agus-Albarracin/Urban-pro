@@ -1,4 +1,5 @@
 import './index.css'
+import { ToastContainer } from 'react-toastify';
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -22,6 +23,7 @@ root.render(
       <QueryClientProvider client={queryClient}>
       <LanguageProvider> 
         <App />
+        <ToastContainer />
       </LanguageProvider> 
       </QueryClientProvider>
     </AuthenticationProvider>

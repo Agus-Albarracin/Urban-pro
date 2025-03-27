@@ -12,6 +12,7 @@ import Table from '../shared/Table';
 import TableItem from '../shared/TableItem';
 import LanguageContext from "../../locales/i18n";
 import { FormattedMessage } from 'react-intl';
+import { toast } from 'react-toastify'; 
 
 
 
@@ -27,6 +28,7 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
   const [selectedCourseId, setSelectedCourseId] = useState<string | undefined>();
   const [error, setError] = useState<string | undefined>();
   const [updateShow, setUpdateShow] = useState<boolean>(false);
+  
 
   const context = useContext(LanguageContext);
   const { locale } = context || { locale: "en" };
@@ -68,6 +70,7 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
   const handleDelete = async () => {
     if (!selectedCourseId) {
       setError("Course ID is required.");
+      toast.error("Error, try again")
       return;
     }
 
@@ -75,10 +78,12 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
       setIsDeleting(true);
       await courseService.delete(selectedCourseId);
 
+      toast.success('Course deleted successfully');
       setDeleteShow(false);
     } catch (error: any) {
       
       setError(error?.response?.data?.message || "An unexpected error occurred");
+      toast.error(`Error: ${error?.response?.data?.message}`)
     } finally {
       setIsDeleting(false);
     }
@@ -173,6 +178,16 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
                       <Trash />
                       </button>
                     ) : null}
+
+                    {/* {authenticatedUser?.role === 'user' ? (
+                        <button
+                          className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 ml-3"
+                          onClick={() => handleEnroll(id)}
+                        >
+                          Inscribirse
+                        </button>
+                    ) : null} */}
+
                   </TableItem>
                 </tr>
               )}

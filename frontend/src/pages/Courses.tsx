@@ -12,6 +12,7 @@ import useAuth from '../hooks/useAuth';
 import CreateCourseRequest from '../models/course/CreateCourseRequest';
 import courseService from '../services/CourseService';
 import LanguageContext from "../locales/i18n";
+import { toast } from 'react-toastify'
 
 
 export default function Courses() {
@@ -115,6 +116,16 @@ export default function Courses() {
       return locale === "es" ? filtersEs : filtersEn;
     };
     const filters = getFilters(locale);
+
+
+    const handleAddCourse = async () => {
+      try {
+          toast.success("The course was added successfully!");
+          setAddCourseShow(false);
+      } catch (error: any) {
+        toast.error(`Error: ${error.message || "Something went wrong!"}`);
+      }
+    };
     
   return (
     <Layout>
@@ -181,15 +192,15 @@ export default function Courses() {
 
       <CoursesTable data={sortedCourses ?? []} isLoading={isLoading}/>
 
-      {/* Add User Modal */}
+      {/* Add Courses Modal */}
       <Modal show={addCourseShow}>
         <div className="flex">
           <h1 className="font-semibold mb-3"><FormattedMessage id="addCourses" /></h1>
           <button
             className="ml-auto focus:outline-none"
             onClick={() => {
-              reset();
               setAddCourseShow(false);
+              reset();
             }}
           >
             <X width={24} height={24} />
@@ -245,7 +256,9 @@ export default function Courses() {
             disabled={isSubmitting}
             onChange={(e) => setFile(e.target.files?.[0] || null)}
             />
-          <button className="btn" disabled={isSubmitting}>
+          <button className="btn" 
+                  disabled={isSubmitting}
+                  onClick={handleAddCourse}>
             {isSubmitting ? (
               <Loader className="animate-spin mx-auto" />
             ) : (

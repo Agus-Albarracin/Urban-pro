@@ -19,6 +19,7 @@
     "react-hook-form": "^7.54.2",
     "react-intl": "^7.1.9",
     "react-router-dom": "^7.4.0",
+    "react-toastify": "^11.0.5",
     "web-vitals": "^4.2.4",
     "yarn": "^1.22.22"
   },
