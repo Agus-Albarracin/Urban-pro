@@ -16,6 +16,7 @@ const Users: React.FC = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
 
   const [addUserShow, setAddUserShow] = useState<boolean>(false);
@@ -27,6 +28,7 @@ const Users: React.FC = () => {
       const response = await userService.findAll({
         firstName: firstName || '',
         lastName: lastName || '',
+        email: email || '',
         username: username || '',
         role: role || '',
       });
@@ -34,6 +36,7 @@ const Users: React.FC = () => {
       return response.filter((user) => user.id !== authenticatedUser?.id);
     },
     refetchInterval: false,
+    enabled: !!(firstName || lastName || username || role),
   });
 
   const {
@@ -99,6 +102,13 @@ const Users: React.FC = () => {
           <input
             type="text"
             className="input w-1/2"
+            placeholder="Filter email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="text"
+            className="input w-1/2"
             placeholder="Filter user"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -160,12 +170,20 @@ const Users: React.FC = () => {
             />
           </div>
           <input
+              type="text"
+              className="input sm:w-1/2"
+              placeholder="User name"
+              required
+              disabled={isSubmitting}
+              {...register('username')}
+            />
+          <input
             type="text"
             className="input"
             required
-            placeholder="Username"
+            placeholder="E-mail"
             disabled={isSubmitting}
-            {...register('username')}
+            {...register('email')}
           />
           <input
             type="password"
