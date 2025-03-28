@@ -7,17 +7,20 @@ import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { User } from './user.entity';
 import { Role } from '../enums/role.enum';
 import { UserQuery } from './user.query';
+import { Course } from '../course/course.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Course)
+    private courseRepository: Repository<Course>
   ) {}
 
   async save(createUserDto: CreateUserDto): Promise<User> {
     const user = await this.findByUsername(createUserDto.username);
-
+    
     if (user) {
       throw new HttpException(
         `User with username ${createUserDto.username} already exists`,
@@ -113,5 +116,21 @@ export class UserService {
     await this.userRepository.update(user.id, {
       refreshToken: refreshToken ? await bcrypt.hash(refreshToken, 10) : null,
     });
+  }
+
+
+  async subscribeUserToCourse(username: string, name: string) {
+    const user = await this.userRepository.findOne({ where: { username: username } });
+    const course = await this.courseRepository.findOne({ where: { name: name} });
+  
+    if (!user || !course) {
+      throw new Error('Usuario o curso no encontrado');
+    }
+  
+    user.courses = [...user.courses, course];
+    await user.save();
+  
+    console.log(`El usuario ${user.username} se ha suscrito al curso ${course.name}`);
+    return { message: 'El usuario se ha suscrito al curso correctamente', status: 200 };
   }
 }

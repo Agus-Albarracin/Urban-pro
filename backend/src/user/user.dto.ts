@@ -2,6 +2,7 @@ import {
   IsAlphanumeric,
   IsBoolean,
   IsEnum,
+  IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -20,7 +21,7 @@ export class CreateUserDto {
   lastName: string;
 
   @IsNotEmpty()
-  @IsAlphanumeric()
+  @IsEmail()
   email: string;
 
   @IsNotEmpty()

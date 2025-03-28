@@ -7,6 +7,7 @@ import useAuth from '../../hooks/useAuth';
 import Course from '../../models/course/Course';
 import UpdateCourseRequest from '../../models/course/UpdateCourseRequest';
 import courseService from '../../services/CourseService';
+import UserService from '../../services/UserService';
 import Modal from '../shared/Modal';
 import Table from '../shared/Table';
 import TableItem from '../shared/TableItem';
@@ -116,6 +117,19 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
       setError(error?.response?.data?.message || "An unexpected error occurred");
     }
   };
+
+
+
+  const handleEnroll = async (username: string, name:string) => {
+    try {
+      const response = await UserService.subscribeUserToCourse(username, name)
+      toast.success('You have successfully subscribed to the course.')
+      return response
+
+    } catch (error) {
+      toast.error('There was an error subscribing you to the course');
+    }
+  };
   
   
 
@@ -139,7 +153,7 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
           {isLoading
             ? null
             : currentCourses.map(({ id, name, description, startDate, type, filePath }) => 
-            { console.log(`Curso: ${name}, file:`, filePath); 
+            {
               return( 
                 <tr key={id}>
                   <TableItem>
@@ -179,14 +193,14 @@ export default function CoursesTable({ data, isLoading }: UsersTableProps) {
                       </button>
                     ) : null}
 
-                    {/* {authenticatedUser?.role === 'user' ? (
+                    {authenticatedUser?.role === 'user' ? (
                         <button
                           className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 ml-3"
-                          onClick={() => handleEnroll(id)}
+                          onClick={() => handleEnroll(authenticatedUser.username, name)}
                         >
                           Inscribirse
                         </button>
-                    ) : null} */}
+                    ) : null}
 
                   </TableItem>
                 </tr>

@@ -6,6 +6,7 @@ import apiService from './ApiService';
 
 class UserService {
   async save(createUserRequest: CreateUserRequest): Promise<void> {
+    console.log(createUserRequest)
     await apiService.post('/api/users', createUserRequest);
   }
 
@@ -25,11 +26,12 @@ class UserService {
     id: string,
     updateUserRequest: UpdateUserRequest,
   ): Promise<void> {
-    const { firstName, isActive, lastName, password, role, username } =
+    const { firstName, isActive, lastName, email, password, role, username } =
       updateUserRequest;
     await apiService.put(`/api/users/${id}`, {
       firstName: firstName || undefined,
       lastName: lastName || undefined,
+      email: email || undefined,
       username: username || undefined,
       role: role || undefined,
       isActive,
@@ -40,9 +42,21 @@ class UserService {
   async delete(id: string): Promise<void> {
     await apiService.delete(`/api/users/${id}`);
   }
+
+  async subscribeUserToCourse(username: string, name: string): Promise<{ message: string, status: number }> {
+    try {
+      const response = await apiService.post('/addCourse', { username, name });
+      
+      return response.data;
+
+    } catch (error) {
+
+      console.error('Error al suscribir al usuario:', error);
+
+      throw error; 
+    }
+  }
 }
-
-
 
 
 export default new UserService();
