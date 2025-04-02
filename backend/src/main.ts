@@ -10,6 +10,8 @@ import { AppModule } from './app.module';
 import { Role } from './enums/role.enum';
 import { User } from './user/user.entity';
 
+import * as statusMonitor from 'express-status-monitor';
+
 async function createAdminOnFirstUse() {
   const admin = await User.findOne({ where: { username: 'admin' } });
 
@@ -42,6 +44,8 @@ async function bootstrap() {
       credentials: true
     });
 
+    app.use(statusMonitor({ path: '/status' }));
+
   
   app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
@@ -51,4 +55,5 @@ async function bootstrap() {
     console.log("Se inicio correctamente en el puerto 5000")
   });
 }
+
 bootstrap();
